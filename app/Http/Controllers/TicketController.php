@@ -6,26 +6,45 @@ use App\Models\Category;
 use App\Models\Department;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TicketController extends Controller 
 {
+
+    public function dashboard()
+    {
+        $user = auth()->user();
+        $allTickets = $user->tickets;
+        $recentTickets = $user->tickets()
+            ->latest()
+            ->limit(10)
+            ->get();
+            
+        return view('user.dashboard', compact('allTickets', 'recentTickets'));
+    }
+
     public function index()
     {
-        $tickets = auth()->user()->tickets()->latest()->paginate(10);
+        $tickets = auth()->user()
+            ->tickets()
+            ->latest()
+            ->paginate(10);
+            
         return view('tickets.index', compact('tickets'));
     }
 
     public function create()
     {
-        $categories = Category::all();
-        $departments = Department::all();
+        $categories = Category::select('id', 'name')->get();
+        $departments = Department::select('id', 'name')->get();
 
         return view('tickets.create', compact('categories', 'departments'));
     }
 
-    public function store(Request $request)
+ public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
             'priority' => 'nullable|in:low,medium,high,urgent',
@@ -33,132 +52,164 @@ class TicketController extends Controller
             'department_id' => 'nullable|exists:departments,id',
             'attachments.*' => 'nullable|file|max:5120|mimes:jpg,jpeg,png,pdf,doc,docx',
         ]);
-
-        $attachments = [];
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $filename = time().'_'.$file->getClientOriginalName();
-                $file->storeAs('tickets', $filename, 'public');
-                $attachments[] = $filename;
-            }
-        }
-
+        
+        $attachments = $this->handleFileUploads($request);
+        
         Ticket::create([
             'user_id' => auth()->id(),
-            'category_id' => $request->category_id,
-            'department_id' => $request->department_id,
-            'subject' => $request->subject,
-            'message' => $request->message,
-            'priority' => $request->priority ?? 'low',
+            'category_id' => $validated['category_id'] ?? null,
+            'department_id' => $validated['department_id'] ?? null,
+            'subject' => $validated['subject'],
+            'message' => $validated['message'],
+            'priority' => $validated['priority'] ?? 'low',
             'status' => 'open',
-            'attachments' => json_encode($attachments),
+            'attachments' => $attachments,
         ]);
-
-        session()->flash('success', '🎫 Ticket created successfully!');
-        return redirect()->route('tickets.index');
+        
+        return redirect()
+            ->route('tickets.index')
+            ->with('success', 'Ticket created successfully!');
     }
-
     public function show(Ticket $ticket)
     {
-        if ($ticket->user_id !== auth()->id() && auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeTicketAccess($ticket);
 
-        $ticket->load('replies.user');
+        $ticket->load(['replies' => function ($query) {
+            $query->latest()->with('user:id,name,email');
+        }]);
+        
         return view('tickets.show', compact('ticket'));
     }
 
-    // ✅ Edit ticket
     public function edit(Ticket $ticket)
     {
-        if ($ticket->user_id !== auth()->id() && auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeTicketAccess($ticket);
 
-        $categories = Category::all();
-        $departments = Department::all();
-
-        // Decode attachments for display
-        $ticket->attachments = json_decode($ticket->attachments, true);
+        $categories = Category::select('id', 'name')->get();
+        $departments = Department::select('id', 'name')->get();
 
         return view('tickets.edit', compact('ticket', 'categories', 'departments'));
     }
 
-    // ✅ Update ticket
-    public function update(Request $request, Ticket $ticket)
-    {
-        if ($ticket->user_id !== auth()->id() && auth()->user()->role !== 'admin') {
-            abort(403);
+  public function update(Request $request, Ticket $ticket)
+{
+    $this->authorizeTicketAccess($ticket);
+
+    $validated = $request->validate([
+        'subject' => 'required|string|max:255',
+        'message' => 'required|string',
+        'priority' => 'nullable|in:low,medium,high,urgent',
+        'category_id' => 'nullable|exists:categories,id',
+        'department_id' => 'nullable|exists:departments,id',
+        'attachments.*' => 'nullable|file|max:5120|mimes:jpg,jpeg,png,pdf,doc,docx',
+        'remove_attachments' => 'nullable|array',
+        'remove_attachments.*' => 'string',
+    ]);
+
+    // Get existing attachments (the cast handles JSON decoding automatically)
+    $existingAttachments = $ticket->attachments ?? [];
+    
+    // Remove selected attachments
+    if ($request->has('remove_attachments')) {
+        foreach ($request->remove_attachments as $filename) {
+            Storage::disk('public')->delete('tickets/' . $filename);
+            $existingAttachments = array_diff($existingAttachments, [$filename]);
         }
-
-        $request->validate([
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string',
-            'priority' => 'nullable|in:low,medium,high,urgent',
-            'category_id' => 'nullable|exists:categories,id',
-            'department_id' => 'nullable|exists:departments,id',
-            'attachments.*' => 'nullable|file|max:5120|mimes:jpg,jpeg,png,pdf,doc,docx',
-        ]);
-
-        $existingAttachments = json_decode($ticket->attachments, true) ?? [];
-        $newAttachments = [];
-
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $filename = time().'_'.$file->getClientOriginalName();
-                $file->storeAs('tickets', $filename, 'public');
-                $newAttachments[] = $filename;
-            }
-        }
-
-        // Merge old and new attachments
-        $allAttachments = array_merge($existingAttachments, $newAttachments);
-
-        $ticket->update([
-            'subject' => $request->subject,
-            'message' => $request->message,
-            'priority' => $request->priority ?? 'low',
-            'category_id' => $request->category_id,
-            'department_id' => $request->department_id,
-            'attachments' => json_encode($allAttachments),
-        ]);
-
-        session()->flash('success', '🎫 Ticket updated successfully!');
-        return redirect()->route('tickets.show', $ticket->id);
     }
+
+    // Add new attachments
+    $newAttachments = $this->handleFileUploads($request);
+    $allAttachments = array_merge(array_values($existingAttachments), $newAttachments);
+
+    $ticket->update([
+        'subject' => $validated['subject'],
+        'message' => $validated['message'],
+        'priority' => $validated['priority'] ?? 'low',
+        'category_id' => $validated['category_id'] ?? null,
+        'department_id' => $validated['department_id'] ?? null,
+        'attachments' => $allAttachments, // The cast handles JSON encoding automatically
+    ]);
+
+    return redirect()
+        ->route('tickets.show', $ticket)
+        ->with('success', ' Ticket updated successfully!');
+}
 
     public function adminIndex()
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
-
-        $tickets = Ticket::latest()->paginate(15);
-        $allTickets = Ticket::all();
-        return view('admin.dashboard', compact('tickets', 'allTickets'));
+        $tickets = Ticket::with(['user:id,name,email', 'category:id,name', 'department:id,name'])
+            ->latest()
+            ->paginate(15);
+            
+        $stats = [
+            'total' => Ticket::count(),
+            'open' => Ticket::where('status', 'open')->count(),
+            'pending' => Ticket::where('status', 'pending')->count(),
+            'closed' => Ticket::where('status', 'closed')->count(),
+        ];
+        
+        return view('admin.dashboard', compact('tickets', 'stats'));
     }
 
     public function changeStatus(Request $request, Ticket $ticket)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $validated = $request->validate([
+            'status' => 'required|in:open,pending,closed'
+        ]);
+        
+        $ticket->update(['status' => $validated['status']]);
 
-        $request->validate(['status' => 'required|in:open,pending,closed']);
-        $ticket->update(['status' => $request->status]);
-
-        session()->flash('success', 'Ticket status updated');
-        return back();
+        return back()->with('success', 'Ticket status updated');
     }
 
     public function destroy(Ticket $ticket)
     {
-        if (auth()->user()->role !== 'admin' && $ticket->user_id !== auth()->id()) {
+        $user = auth()->user();
+        
+        if ($user->role !== 'admin' && $ticket->user_id !== $user->id) {
             abort(403);
         }
 
+        // Delete associated files
+        if ($ticket->attachments) {
+            foreach ($ticket->attachments as $filename) {
+                Storage::disk('public')->delete('tickets/' . $filename);
+            }
+        }
+
         $ticket->delete();
-        session()->flash('success', 'Ticket deleted');
-        return back();
+        
+        return back()->with('success', 'Ticket deleted');
+    }
+
+    // Helper Methods
+    private function authorizeTicketAccess(Ticket $ticket): void
+    {
+        $user = auth()->user();
+        
+        if ($ticket->user_id !== $user->id && $user->role !== 'admin') {
+            abort(403, 'Unauthorized access to ticket');
+        }
+    }
+
+   
+    private function handleFileUploads(Request $request)
+    {
+        $attachments = [];
+        
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                // Generate unique filename
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                
+                // Store in storage/app/public/tickets/
+                $file->storeAs('tickets', $filename, 'public');
+                
+                // Add filename to array
+                $attachments[] = $filename;
+            }
+        }
+        
+        return $attachments;
     }
 }

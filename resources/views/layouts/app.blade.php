@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Support Ticket System') }} - @yield('title', 'Dashboard')</title>
+    <title>{{ config('app.name', __('Support Ticket System')) }} - @yield('title', __('Dashboard'))</title>
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <!-- Bootstrap 5.3 CSS -->
@@ -55,10 +55,10 @@
         <div class="container-fluid px-4">
             <div class="row">
                 <div class="col-md-6 text-center text-md-start">
-                    <p class="text-muted mb-0">&copy; {{ date('Y') }} {{ config('app.name', 'Support Ticket System') }}. All rights reserved.</p>
+                    <p class="text-muted mb-0">&copy; {{ date('Y') }} {{ config('app.name', __('Support Ticket System')) }}. {{__('All rights reserved.')}}</p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
-                    <p class="text-muted mb-0">Version 1.0.0</p>
+                    <p class="text-muted mb-0">{{__('Version')}} 1.0.0</p>
                 </div>
             </div>
         </div>

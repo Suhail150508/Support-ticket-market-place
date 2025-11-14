@@ -57,4 +57,37 @@ class User extends Authenticatable
     {
         return $this->role === 'user';
     }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    public function activeSubscription()
+    {
+        return $this->hasOne(UserSubscription::class)
+            ->where('status', 'active')
+            ->where('ends_at', '>', now())
+            ->latest();
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function chatMessages()
+    {
+        return $this->hasMany(ChatMessage::class);
+    }
+
+    public function hasActiveSubscription()
+    {
+        return $this->activeSubscription()->exists();
+    }
+
+    public function canAccessChat()
+    {
+        return $this->hasActiveSubscription() || $this->isAdmin();
+    }
 }

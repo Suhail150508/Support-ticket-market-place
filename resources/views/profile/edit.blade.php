@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Profile')
+@section('title', __('Profile'))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h1 class="mb-2"><i class="fas fa-user me-2"></i>Profile Settings</h1>
-        <p class="mb-0 opacity-75">Manage your account information and preferences</p>
+        <h1 class="mb-2"><i class="fas fa-user me-2"></i>{{__('Profile Settings')}}</h1>
+        <p class="mb-0 opacity-75">{{__('Manage your account information and preferences')}}</p>
     </div>
 </div>
 
@@ -15,7 +15,7 @@
         <!-- Update Profile Information -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Profile Information</h5>
+                <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>{{__('Profile Information')}}</h5>
             </div>
             <div class="card-body p-4">
                 @include('profile.partials.update-profile-information-form')
@@ -25,7 +25,7 @@
         <!-- Update Password -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-lock me-2"></i>Update Password</h5>
+                <h5 class="mb-0"><i class="fas fa-lock me-2"></i>{{__('Update Password')}}</h5>
             </div>
             <div class="card-body p-4">
                 @include('profile.partials.update-password-form')
@@ -35,7 +35,7 @@
         <!-- Delete Account -->
         <div class="card mb-4">
             <div class="card-header bg-danger text-white">
-                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Delete Account</h5>
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>{{__('Delete Account')}}</h5>
             </div>
             <div class="card-body p-4">
                 @include('profile.partials.delete-user-form')
@@ -62,11 +62,11 @@
                 <div class="text-start">
                     <small class="text-muted d-block mb-2">
                         <i class="fas fa-calendar me-2"></i>
-                        Member since {{ auth()->user()->created_at->format('M Y') }}
+                        {{__('Member since')}} {{ auth()->user()->created_at->format('M Y') }}
                     </small>
                     <small class="text-muted d-block">
                         <i class="fas fa-ticket-alt me-2"></i>
-                        {{ auth()->user()->tickets()->count() }} tickets created
+                        {{ auth()->user()->tickets()->count() }} {{__('tickets created')}}
                     </small>
                 </div>
             </div>

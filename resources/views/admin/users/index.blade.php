@@ -1,32 +1,32 @@
 @extends('layouts.admin')
 
-@section('page-title', 'User Management')
+@section('page-title', __('User Management'))
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="mb-0"><i class="fas fa-users me-2"></i>Users</h2>
-        <p class="text-muted mb-0">Manage system users</p>
+        <h2 class="mb-0"><i class="fas fa-users me-2"></i>{{__('Users')}}</h2>
+        <p class="text-muted mb-0">{{__('Manage system users')}}</p>
     </div>
 </div>
 
 <!-- Users Table -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Users</h5>
-        <span class="badge bg-primary">{{ $users->total() }} Total</span>
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>{{__('All Users')}}</h5>
+        <span class="badge bg-primary">{{ $users->total() }} {{__('Total')}}</span>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Tickets</th>
-                        <th>Created</th>
+                        <th>{{__('ID')}}</th>
+                        <th>{{__('Name')}}</th>
+                        <th>{{__('Email')}}</th>
+                        <th>{{__('Role')}}</th>
+                        <th>{{__('Tickets')}}</th>
+                        <th>{{__('Created')}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -59,7 +59,7 @@
                     <tr>
                         <td colspan="6" class="text-center py-5">
                             <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No users found.</p>
+                            <p class="text-muted">{{__('No users found.')}}</p>
                         </td>
                     </tr>
                     @endforelse
@@ -76,4 +76,3 @@
     @endif
 </div>
 @endsection
-

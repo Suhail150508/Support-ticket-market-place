@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid px-4">
         <a class="navbar-brand" href="{{ route('tickets.index') }}">
-            <i class="fas fa-ticket-alt me-2"></i>Support System
+            <i class="fas fa-ticket-alt me-2"></i>{{__('Support System')}}
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border: 1px solid rgba(255,255,255,0.3);">
             <span class="navbar-toggler-icon" style="filter: brightness(0) invert(1);"></span>
@@ -11,18 +11,18 @@
                 @auth
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('tickets.index') }}">
-                            <i class="fas fa-list me-1"></i>My Tickets
+                            <i class="fas fa-list me-1"></i>{{__('My Tickets')}}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('tickets.create') }}">
-                            <i class="fas fa-plus-circle me-1"></i>New Ticket
+                            <i class="fas fa-plus-circle me-1"></i>{{__('New Ticket')}}
                         </a>
                     </li>
                     @if(auth()->user()->role == 'admin')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('admin.dashboard') }}">
-                                <i class="fas fa-user-shield me-1"></i>Admin Panel
+                                <i class="fas fa-user-shield me-1"></i>{{__('Admin Panel')}}
                             </a>
                         </li>
                     @endif
@@ -31,13 +31,13 @@
                             <i class="fas fa-user-circle me-1"></i>{{ auth()->user()->name }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href=""><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href=""><i class="fas fa-user me-2"></i>{{__('Profile')}}</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                     @csrf
                                     <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        <i class="fas fa-sign-out-alt me-2"></i>{{__('Logout')}}
                                     </button>
                                 </form>
                             </li>
@@ -46,12 +46,12 @@
                 @else
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('login') }}">
-                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                            <i class="fas fa-sign-in-alt me-1"></i>{{__('Login')}}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('register') }}">
-                            <i class="fas fa-user-plus me-1"></i>Register
+                            <i class="fas fa-user-plus me-1"></i>{{__('Register')}}
                         </a>
                     </li>
                 @endauth

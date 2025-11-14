@@ -1,7 +1,7 @@
 @if($ticket->replies->count() > 0)
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Conversation ({{ $ticket->replies->count() }} replies)</h5>
+        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>{{ __('Conversation') }} ({{ $ticket->replies->count() }} {{ __('replies') }})</h5>
     </div>
     <div class="card-body p-0">
         <div class="p-4">
@@ -20,10 +20,10 @@
                                     {{ $reply->user->name }}
                                     @if($reply->user->role == 'admin')
                                         <span class="badge bg-primary ms-2">
-                                            <i class="fas fa-user-shield me-1"></i>Admin
+                                            <i class="fas fa-user-shield me-1"></i>{{ __('Admin') }}
                                         </span>
                                     @else
-                                        <span class="badge bg-secondary ms-2">User</span>
+                                        <span class="badge bg-secondary ms-2">{{ __('User') }}</span>
                                     @endif
                                 </h6>
                                 <small class="text-muted">
@@ -41,7 +41,7 @@
                         <!-- Attachment -->
                         @if($reply->attachment)
                         <div>
-                            <strong>Attachments:</strong>
+                            <strong>{{ __('Attachments') }}:</strong>
                             <ul class="list-unstyled mb-0">
                                 @foreach(json_decode($reply->attachment) as $file)
                                     <li>
@@ -65,7 +65,7 @@
 <div class="card mb-4">
     <div class="card-body text-center py-5">
         <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-        <p class="text-muted mb-0">No replies yet. Be the first to respond!</p>
+        <p class="text-muted mb-0">{{ __('No replies yet. Be the first to respond!') }}</p>
     </div>
 </div>
 @endif

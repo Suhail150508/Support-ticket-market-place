@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\HomePageContent;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
@@ -12,7 +13,14 @@ class HomeController extends Controller
 
     public function index()
     {
-        return view('index');
+        $hero = HomePageContent::getContent('hero');
+        $features = HomePageContent::getContent('features');
+        $stats = HomePageContent::getContent('stats');
+        $testimonials = HomePageContent::getContent('testimonials');
+        $contact = HomePageContent::getContent('contact');
+        $footer = HomePageContent::getContent('footer');
+        
+        return view('index', compact('hero', 'features', 'stats', 'testimonials', 'contact', 'footer'));
     }
     
     public function createLogin(Request $request)

@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminTicketController extends Controller
 {
-    // Uncomment this if you have admin middleware
-    // public function __construct()
-    // {
-    //     $this->middleware(['auth', 'is_admin']);
-    // }
 
     public function index(Request $request)
     {
@@ -60,17 +55,10 @@ class AdminTicketController extends Controller
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|in:open,in_progress,resolved,pending,closed',
             'assigned_to' => 'nullable|exists:users,id',
-            'attachments.*' => 'nullable|file|max:5120', // 5MB per file
+            'attachments.*' => 'nullable|file|max:5120',
         ]);
 
-        $attachments = [];
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->storeAs('public/tickets', $filename);
-                $attachments[] = $filename;
-            }
-        }
+        $attachments = $this->handleFileUploads($request);
 
         Ticket::create([
             'user_id' => $request->user_id,
@@ -81,7 +69,7 @@ class AdminTicketController extends Controller
             'priority' => $request->priority,
             'status' => $request->status,
             'assigned_to' => $request->assigned_to,
-            'attachments' => $attachments ? json_encode($attachments) : null,
+            'attachments' => $attachments,
         ]);
 
         session()->flash('success', 'Ticket created successfully');
@@ -114,18 +102,21 @@ class AdminTicketController extends Controller
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|in:open,in_progress,resolved,pending,closed',
             'assigned_to' => 'nullable|exists:users,id',
-            'attachments.*' => 'nullable|file|max:5120', // 5MB per file
+            'attachments.*' => 'nullable|file|max:5120',
         ]);
 
-        $attachments = $ticket->attachments ? json_decode($ticket->attachments, true) : [];
+        $attachments = $ticket->attachments ?? [];
 
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->storeAs('public/tickets', $filename);
-                $attachments[] = $filename;
+         // Remove selected attachments
+        if ($request->has('remove_attachments')) {
+            foreach ($request->remove_attachments as $filename) {
+                Storage::disk('public')->delete('tickets/' . $filename);
+                $existingAttachments = array_diff($existingAttachments, [$filename]);
             }
         }
+
+        $newAttachments = $this->handleFileUploads($request);
+        $attachments = array_merge($attachments, $newAttachments);
 
         $ticket->update([
             'user_id' => $request->user_id,
@@ -136,24 +127,52 @@ class AdminTicketController extends Controller
             'priority' => $request->priority,
             'status' => $request->status,
             'assigned_to' => $request->assigned_to,
-            'attachments' => $attachments ? json_encode($attachments) : null,
+            'attachments' => $attachments,
         ]);
 
         session()->flash('success', 'Ticket updated successfully');
         return redirect()->route('admin.tickets.index');
     }
 
+
     public function destroy(Ticket $ticket)
     {
-        // Delete attachments from storage
+        $user = auth()->user();
+        
+        if ($user->role !== 'admin' && $ticket->user_id !== $user->id) {
+            abort(403);
+        }
+
+        // Delete associated files
         if ($ticket->attachments) {
-            foreach (json_decode($ticket->attachments) as $file) {
-                Storage::delete('public/tickets/' . $file);
+            foreach ($ticket->attachments as $filename) {
+                Storage::disk('public')->delete('tickets/' . $filename);
             }
         }
 
         $ticket->delete();
+        
         session()->flash('success', 'Ticket deleted successfully');
         return redirect()->route('admin.tickets.index');
+    }
+
+    private function handleFileUploads(Request $request)
+    {
+        $attachments = [];
+        
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                // Generate unique filename
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                
+                // Store in storage/app/public/tickets/
+                $file->storeAs('tickets', $filename, 'public');
+                
+                // Add filename to array
+                $attachments[] = $filename;
+            }
+        }
+        
+        return $attachments;
     }
 }

@@ -23,6 +23,10 @@ class Ticket extends Model
         'resolved_at',
     ];
 
+    protected $casts = [
+        'attachments' => 'array',
+    ];
+
     // Ticket owner
     public function user()
     {
