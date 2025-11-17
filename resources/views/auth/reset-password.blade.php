@@ -153,9 +153,10 @@
         <div class="reset-card">
             <div class="reset-header">
                 <i class="fas fa-key"></i>
-                <h2>Reset Password</h2>
-                <p>Enter your new password below</p>
+                <h2>{{ __('Reset Password') }}</h2>
+                <p>{{ __('Enter your new password below') }}</p>
             </div>
+
             <div class="reset-body">
                 @if($errors->any())
                     <div class="alert alert-danger">
@@ -175,7 +176,7 @@
                     <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
+                        <label for="email" class="form-label">{{ __('Email Address') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                             <input type="email" 
@@ -189,7 +190,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="password" class="form-label">New Password</label>
+                        <label for="password" class="form-label">{{ __('New Password') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" 
@@ -199,17 +200,15 @@
                                    required>
                         </div>
                         <div class="password-requirements">
-                            <strong>Password Requirements:</strong>
+                            <strong>{{ __('Password Requirements:') }}</strong>
                             <ul>
-                                <li>At least 8 characters long</li>
-                                <li>Mix of uppercase and lowercase letters</li>
-                                <li>Include numbers and special characters</li>
+                                <li>{{ __('At least 4 characters long') }}</li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="password_confirmation" class="form-label">Confirm New Password</label>
+                        <label for="password_confirmation" class="form-label">{{ __('Confirm New Password') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" 
@@ -221,12 +220,12 @@
                     </div>
 
                     <button type="submit" class="btn btn-reset">
-                        <i class="fas fa-key me-2"></i>Reset Password
+                        <i class="fas fa-key me-2"></i>{{ __('Reset Password') }}
                     </button>
 
                     <div class="text-center mt-3">
                         <a href="{{ route('login') }}" class="text-link">
-                            <i class="fas fa-arrow-left me-1"></i>Back to Login
+                            <i class="fas fa-arrow-left me-1"></i>{{ __('Back to Login') }}
                         </a>
                     </div>
                 </form>

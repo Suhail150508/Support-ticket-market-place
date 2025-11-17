@@ -56,4 +56,10 @@ class UserSubscription extends Model
         }
         return max(0, Carbon::now()->diffInDays($this->ends_at));
     }
+
+    public function subscriptionPlan()
+    {
+        return $this->belongsTo(SubscriptionPlan::class);
+    }
+
 }

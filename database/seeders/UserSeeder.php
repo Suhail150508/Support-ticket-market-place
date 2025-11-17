@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Admin',
-                'email' => 'admin@example.com',
+                'email' => 'admin@gmail.com',
                 'password' => bcrypt('password'),
                 'role' => 'admin',
             ]
@@ -22,10 +22,10 @@ class UserSeeder extends Seeder
 
         // Demo user
         User::updateOrCreate(
-            ['email' => 'user@example.com'],
+            ['email' => 'user@gmail.com'],
             [
                 'name' => 'Demo User',
-                'email' => 'user@example.com',
+                'email' => 'user@gmail.com',
                 'password' => bcrypt('password'),
                 'role' => 'user',
             ]

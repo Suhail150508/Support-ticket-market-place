@@ -158,9 +158,10 @@
         <div class="forgot-card">
             <div class="forgot-header">
                 <i class="fas fa-unlock-alt"></i>
-                <h2>Forgot Password?</h2>
-                <p>No worries, we'll send you reset instructions</p>
+                <h2>{{ __('Forgot Password?') }}</h2>
+                <p>{{ __('No worries, we\'ll send you reset instructions') }}</p>
             </div>
+
             <div class="forgot-body">
                 <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -178,7 +179,7 @@
                 <div class="info-box">
                     <p>
                         <i class="fas fa-info-circle"></i>
-                        Enter your email address and we'll send you a link to reset your password.
+                        {{ __('Enter your email address and we\'ll send you a link to reset your password.') }}
                     </p>
                 </div>
 
@@ -186,7 +187,7 @@
                     @csrf
 
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
+                        <label for="email" class="form-label">{{ __('Email Address') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                             <input type="email" 
@@ -196,17 +197,17 @@
                                    value="{{ old('email') }}" 
                                    required 
                                    autofocus
-                                   placeholder="Enter your email">
+                                   placeholder="{{ __('Enter your email') }}">
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-send">
-                        <i class="fas fa-paper-plane me-2"></i>Send Reset Link
+                        <i class="fas fa-paper-plane me-2"></i>{{ __('Send Reset Link') }}
                     </button>
 
                     <div class="text-center mt-3">
                         <a href="{{ route('login') }}" class="text-link">
-                            <i class="fas fa-arrow-left me-1"></i>Back to Login
+                            <i class="fas fa-arrow-left me-1"></i>{{ __('Back to Login') }}
                         </a>
                     </div>
                 </form>

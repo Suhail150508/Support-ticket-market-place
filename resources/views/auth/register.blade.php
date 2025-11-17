@@ -143,9 +143,10 @@
         <div class="register-card">
             <div class="register-header">
                 <i class="fas fa-user-plus"></i>
-                <h2>Create Account</h2>
-                <p>Join our support system</p>
+                <h2>{{ __('Create Account') }}</h2>
+                <p>{{ __('Join our support system') }}</p>
             </div>
+
             <div class="register-body">
                 @if($errors->any())
                     <div class="alert alert-danger">
@@ -162,56 +163,66 @@
                     @csrf
 
                     <div class="mb-3">
-                        <label for="name" class="form-label">Full Name</label>
+                        <label for="name" class="form-label">{{ __('Full Name') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required autofocus>
+                            <input type="text" class="form-control" id="name" name="name"
+                                   value="{{ old('name') }}" required autofocus>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
+                        <label for="email" class="form-label">{{ __('Email Address') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   value="{{ old('email') }}" required>
                         </div>
                     </div>
 
-                      <div class="mb-3">
-                        <label for="username" class="form-label">Role</label>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">{{ __('Role') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
                             <select class="form-control" id="role" name="role" required>
-                                <option value="" disabled selected>Select Role</option>
-                                <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
-                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="" disabled selected>{{ __('Select Role') }}</option>
+                                <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>
+                                    {{ __('User') }}
+                                </option>
+                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>
+                                    {{ __('Admin') }}
+                                </option>
                             </select>
-                    </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
+                        <label for="password" class="form-label">{{ __('Password') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <small class="text-muted">Must be at least 8 characters</small>
+                        <small class="text-muted">{{ __('Must be at least 4 characters') }}</small>
                     </div>
 
                     <div class="mb-3">
-                        <label for="password_confirmation" class="form-label">Confirm Password</label>
+                        <label for="password_confirmation" class="form-label">{{ __('Confirm Password') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                            <input type="password" class="form-control" id="password_confirmation"
+                                   name="password_confirmation" required>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-register">
-                        <i class="fas fa-user-plus me-2"></i>Create Account
+                        <i class="fas fa-user-plus me-2"></i>{{ __('Create Account') }}
                     </button>
 
                     <div class="login-link">
-                        <p class="text-muted mb-0">Already have an account? <a href="{{ route('login') }}" class="text-link">Sign in here</a></p>
+                        <p class="text-muted mb-0">
+                            {{ __('Already have an account?') }}
+                            <a href="{{ route('login') }}" class="text-link">{{ __('Sign in here') }}</a>
+                        </p>
                     </div>
                 </form>
             </div>

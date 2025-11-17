@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\IsUser;
 use App\Http\Middleware\CheckSubscription;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'is_admin' => IsAdmin::class,
+            'is_user' => IsUser::class,
             'check_subscription' => CheckSubscription::class,
         ]);
     })

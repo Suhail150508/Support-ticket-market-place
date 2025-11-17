@@ -92,7 +92,7 @@
         </div>
 
         <!-- Attachments -->
-       @if($ticket->attachments && count($ticket->attachments) > 0)
+        @if($ticket->attachments && count($ticket->attachments) > 0)
             <hr>
             <div>
                 <h6 class="fw-semibold mb-3"><i class="fas fa-paperclip me-2"></i>{{ __('Attachments')}}</h6>
@@ -186,6 +186,16 @@
                 @enderror
             </div>
             <div class="mb-3">
+                <button type="button" class="btn btn-outline-secondary" id="btn-ai-reply">
+                    <i class="fas fa-robot me-2"></i>{{__('Get AI Suggestions')}}
+                </button>
+            </div>
+            <div class="mb-3" id="ai-reply-suggestions" style="display:none;">
+                <label class="form-label fw-semibold"><i class="fas fa-lightbulb me-2"></i>{{__('AI Suggested Replies')}}</label>
+                <div class="list-group" id="ai-reply-list"></div>
+                <small class="text-muted">{{__('Click a suggestion to insert into your reply')}}</small>
+            </div>
+            <div class="mb-3">
                 <label for="attachment" class="form-label fw-semibold">{{__('Attachments')}}</label>
                 <input type="file" class="form-control" name="attachment[]" multiple>
             </div>
@@ -201,3 +211,57 @@
 </div>
 @endif
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btn-ai-reply');
+    const box = document.getElementById('ai-reply-suggestions');
+    const list = document.getElementById('ai-reply-list');
+    const textarea = document.getElementById('message');
+
+    async function fetchReplySuggestions() {
+        const resp = await fetch('{{ route('ai.reply') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ ticket_id: {{ $ticket->id }} })
+        });
+        const data = await resp.json();
+        return data.suggestions || [];
+    }
+
+    function render(items) {
+        list.innerHTML = '';
+        items.forEach(text => {
+            const a = document.createElement('a');
+            a.href = '#';
+            a.className = 'list-group-item list-group-item-action';
+            a.textContent = text;
+            a.onclick = (e) => {
+                e.preventDefault();
+                const current = textarea.value || '';
+                textarea.value = current ? (current + '\n\n' + text) : text;
+                textarea.focus();
+            };
+            list.appendChild(a);
+        });
+        box.style.display = items.length ? 'block' : 'none';
+    }
+
+    btn.addEventListener('click', async function() {
+        btn.disabled = true;
+        try {
+            const items = await fetchReplySuggestions();
+            render(items);
+        } catch (e) {
+            render([]);
+        } finally {
+            btn.disabled = false;
+        }
+    });
+});
+</script>
+@endpush

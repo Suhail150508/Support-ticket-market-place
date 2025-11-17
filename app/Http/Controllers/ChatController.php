@@ -8,37 +8,66 @@ use Illuminate\Http\Request;
 
 class ChatController extends Controller
 {
+    // List chats
     public function index()
     {
-        // For users - show their chat with admin
-        if (auth()->user()->isUser()) {
+        $user = auth()->user();
+
+        // Regular user
+        if ($user->isUser()) {
+            $subscription = $user->userSubscriptions()
+                ->with('subscriptionPlan')
+                ->where('status', 'active')
+                ->where('ends_at', '>', now())
+                ->first();
+
+            if (!$subscription) {
+                return redirect()->route('subscriptions.index')
+                    ->with('error', 'Please subscribe to a plan to access live chat support.');
+            }
+
+            $plan = $subscription->subscriptionPlan;
+
+            if (!$plan) {
+                return redirect()->route('subscriptions.index')
+                    ->with('error', 'Your subscription plan is invalid. Please contact support.');
+            }
+
+            // Free plan has no chat
+            if ($plan->slug === 'free') {
+                return redirect()->route('subscriptions.index')
+                    ->with('error', 'Your current plan does not include live chat access. Please upgrade to Standard or Gold plan.');
+            }
+
             $messages = ChatMessage::where('user_id', auth()->id())
                 ->orderBy('created_at', 'asc')
                 ->get();
-            
-            // Mark messages as read
+
+            $this->migrateMessageAttachmentsToPublic($messages);
+
+            // Mark admin messages as read
             ChatMessage::where('user_id', auth()->id())
                 ->where('sender_type', 'admin')
                 ->where('is_read', false)
                 ->update(['is_read' => true, 'read_at' => now()]);
-            
-            return view('chat.index', compact('messages'));
+
+            return view('chat.index', compact('messages', 'subscription', 'plan'));
         }
 
-        // For admins - show list of users with active chats
+        // Admin user list
         $users = User::where('role', 'user')
             ->whereHas('chatMessages')
-            ->withCount(['chatMessages as unread_count' => function($query) {
+            ->withCount(['chatMessages as unread_count' => function ($query) {
                 $query->where('is_read', false)->where('sender_type', 'user');
             }])
             ->get();
-        
+
         return view('admin.chat.index', compact('users'));
     }
 
+    // Admin view single chat
     public function show($userId)
     {
-        // Only admins can view specific user chats
         if (!auth()->user()->isAdmin()) {
             abort(403);
         }
@@ -47,6 +76,8 @@ class ChatController extends Controller
         $messages = ChatMessage::where('user_id', $userId)
             ->orderBy('created_at', 'asc')
             ->get();
+
+        $this->migrateMessageAttachmentsToPublic($messages);
 
         // Mark user messages as read
         ChatMessage::where('user_id', $userId)
@@ -57,12 +88,13 @@ class ChatController extends Controller
         return view('admin.chat.show', compact('user', 'messages'));
     }
 
+    // Send message
     public function store(Request $request)
     {
         $request->validate([
             'message' => 'nullable|string|max:5000',
             'user_id' => 'nullable|exists:users,id',
-            'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120' // 5MB per image
+            'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120'
         ]);
 
         $senderType = auth()->user()->isAdmin() ? 'admin' : 'user';
@@ -73,17 +105,13 @@ class ChatController extends Controller
             foreach ($request->file('images') as $image) {
                 if ($image && $image->isValid()) {
                     $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                    $path = $image->storeAs('public/chat', $filename);
-                    
-                    // Verify file was stored
-                    if ($path && file_exists(storage_path('app/' . $path))) {
-                        $attachments[] = $filename;
-                    }
+                    $image->storeAs('chat', $filename, 'public');
+                    $attachments[] = $filename;
                 }
             }
         }
 
-        $chatMessage = ChatMessage::create([
+        ChatMessage::create([
             'user_id' => $userId,
             'admin_id' => auth()->user()->isAdmin() ? auth()->id() : null,
             'message' => $request->message ?? '',
@@ -93,31 +121,31 @@ class ChatController extends Controller
         ]);
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'message' => 'Message sent successfully',
             'attachments' => $attachments
         ]);
     }
 
+    // Poll new messages
     public function getMessages(Request $request)
     {
         $userId = $request->get('user_id') ?? auth()->id();
         $lastId = $request->get('last_id', 0);
-        
-        // Check if user can access (admin or own messages)
+
         if (!auth()->user()->isAdmin() && $userId != auth()->id()) {
             abort(403);
         }
 
         $query = ChatMessage::where('user_id', $userId);
-        
+
         if ($lastId > 0) {
             $query->where('id', '>', $lastId);
         }
-        
+
         $messages = $query->orderBy('created_at', 'asc')->get();
 
-        // Ensure attachments are properly formatted
+        // Normalize attachments
         $messages->transform(function ($message) {
             if ($message->attachments) {
                 if (is_string($message->attachments)) {
@@ -126,10 +154,14 @@ class ChatController extends Controller
                 } elseif (!is_array($message->attachments)) {
                     $message->attachments = [];
                 }
-                // Filter out null/empty values and re-index
-                $message->attachments = array_values(array_filter($message->attachments, function($att) {
+                $message->attachments = array_values(array_filter($message->attachments, function ($att) {
                     return !empty($att) && is_string($att);
                 }));
+
+                // Ensure attachments exist on public disk (migrate old path if needed)
+                foreach ($message->attachments as $att) {
+                    $this->ensurePublicAttachment($att);
+                }
             } else {
                 $message->attachments = [];
             }
@@ -137,5 +169,37 @@ class ChatController extends Controller
         });
 
         return response()->json($messages);
+    }
+
+    private function ensurePublicAttachment(string $filename): void
+    {
+        try {
+            $publicPath = 'chat/' . $filename;
+            if (!\Storage::disk('public')->exists($publicPath)) {
+                $legacyFull = storage_path('app/private/public/chat/' . $filename);
+                if (file_exists($legacyFull)) {
+                    $contents = file_get_contents($legacyFull);
+                    \Storage::disk('public')->put($publicPath, $contents);
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+    }
+
+    private function migrateMessageAttachmentsToPublic($messages): void
+    {
+        foreach ($messages as $message) {
+            $atts = $message->attachments;
+            if (is_string($atts)) {
+                $atts = json_decode($atts, true) ?: [];
+            }
+            if (is_array($atts)) {
+                foreach ($atts as $att) {
+                    if ($att) {
+                        $this->ensurePublicAttachment($att);
+                    }
+                }
+            }
+        }
     }
 }

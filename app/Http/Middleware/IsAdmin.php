@@ -20,7 +20,8 @@ class IsAdmin
         }
 
         if (auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized access. Admin privileges required.');
+            session()->flash('error', 'You do not have permission to access the admin area.');
+            return redirect()->route('user.dashboard');
         }
 
         return $next($request);

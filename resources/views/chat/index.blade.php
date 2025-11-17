@@ -2,8 +2,28 @@
 
 @section('page-title', 'Live Chat')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @push('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+@endpush
+
+@push('styles')
+<style>
+    .chat-container {
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+    .chat-messages {
+        flex: 1;
+    }
+    .message-text {
+        word-wrap: break-word;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -30,8 +50,11 @@
                                     <div class="message-images mb-2">
                                         @foreach($attachments as $attachment)
                                             @if($attachment)
-                                            <a href="{{ asset('storage/chat/' . $attachment) }}" target="_blank" class="d-inline-block me-2 mb-2">
-                                                <img src="{{ asset('storage/chat/' . $attachment) }}" alt="Attachment" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover; cursor: pointer; border: 1px solid #ddd; display: block;" onerror="console.error('Image failed to load'); this.parentElement.style.display='none';">
+                                            @php
+                                                $imageUrl = Storage::url('chat/' . $attachment);
+                                            @endphp
+                                            <a href="{{ $imageUrl }}" target="_blank" class="d-inline-block me-2 mb-2">
+                                                <img src="{{ $imageUrl }}" alt="Attachment" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover; cursor: pointer; border: 1px solid #ddd; display: block;" onerror="console.error('Image failed to load: {{ $imageUrl }}'); this.parentElement.style.display='none';">
                                             </a>
                                             @endif
                                         @endforeach
@@ -162,7 +185,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedImages = [];
                 imageInput.value = '';
                 imagePreview.classList.add('d-none');
-                setTimeout(loadNewMessages, 500);
+                isTyping = false;
+                messageInput.blur();
+                setTimeout(() => loadNewMessages(true), 300);
             } else {
                 alert('Failed to send message');
             }
@@ -178,9 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Load new messages without page reload
-    function loadNewMessages() {
-        // Don't load if user is typing
-        if (isTyping) return;
+    function loadNewMessages(force = false) {
+        if (!force && isTyping) return;
         
         fetch('{{ route("chat.messages") }}?last_id=' + lastMessageId)
             .then(response => response.json())
@@ -209,8 +233,9 @@ document.addEventListener('DOMContentLoaded', function() {
             attachmentsHtml = '<div class="message-images mb-2">';
             msg.attachments.forEach(att => {
                 if (att) {
-                    // Use asset helper for proper URL generation
-                    const imageUrl = `{{ url('/') }}/storage/chat/${encodeURIComponent(att)}`;
+                    // Use Storage::url() equivalent - Laravel's storage URL
+                    const baseUrl = `{{ url('/') }}`;
+                    const imageUrl = `${baseUrl}/storage/chat/${encodeURIComponent(att)}`;
                     attachmentsHtml += `<a href="${imageUrl}" target="_blank" class="d-inline-block me-2 mb-2">
                         <img src="${imageUrl}" alt="Attachment" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover; cursor: pointer; border: 1px solid #ddd;" onerror="console.error('Image failed to load:', '${imageUrl}'); this.parentElement.style.display='none';">
                     </a>`;
@@ -231,10 +256,9 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.appendChild(messageDiv);
     }
 
-    // Poll for new messages every 3 seconds (without reloading page)
-    // Only poll when user is not actively typing
+    // Poll for new messages every 3 seconds
     setInterval(function() {
-        if (!isTyping && document.activeElement !== messageInput) {
+        if (!isTyping) {
             loadNewMessages();
         }
     }, 3000);
@@ -242,20 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 
-@push('styles')
-<style>
-    .chat-container {
-        height: 600px;
-        display: flex;
-        flex-direction: column;
-    }
-    .chat-messages {
-        flex: 1;
-    }
-    .message-text {
-        word-wrap: break-word;
-    }
-</style>
-@endpush
+
 @endsection
 

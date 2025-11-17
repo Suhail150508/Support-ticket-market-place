@@ -17,6 +17,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'image',
     ];
  
     protected $hidden = [
@@ -90,4 +91,15 @@ class User extends Authenticatable
     {
         return $this->hasActiveSubscription() || $this->isAdmin();
     }
+
+    public function userSubscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    public function chatMessagesRelation()
+    {
+        return $this->hasMany(ChatMessage::class);
+    }
+    
 }

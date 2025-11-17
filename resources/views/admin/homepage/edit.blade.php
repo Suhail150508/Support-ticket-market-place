@@ -155,7 +155,7 @@
     "subtitle": "{{__('See what our customers say...')}}",
     "items": [
         {
-            "text": "{{__('SupportPro transformed our...')}}",
+            "text": "{{__('SupportSystem transformed our...')}}",
             "author": "{{__('Sarah Johnson')}}",
             "position": "{{__('CTO, TechInnovate')}}",
             "avatar": "SJ"

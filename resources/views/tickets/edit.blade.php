@@ -105,38 +105,58 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-
+                    
                     <!-- Existing Attachments -->
-                    @php
-                        // Convert attachments to array if it's a string
-                        $attachmentsList = [];
-                        if ($ticket->attachments) {
-                            if (is_string($ticket->attachments)) {
-                                // Try to decode JSON first
-                                $decoded = json_decode($ticket->attachments, true);
-                                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                                    $attachmentsList = $decoded;
-                                } else {
-                                    // If not JSON, try comma-separated
-                                    $attachmentsList = array_filter(array_map('trim', explode(',', $ticket->attachments)));
-                                }
-                            } elseif (is_array($ticket->attachments)) {
-                                $attachmentsList = $ticket->attachments;
-                            }
-                        }
-                    @endphp
-
-                    @if(count($attachmentsList) > 0)
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold"><i class="fas fa-paperclip me-2"></i>{{__('Existing Attachments')}}</label>
-                            <ul class="list-group">
-                                @foreach($attachmentsList as $file)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <a href="{{ asset('storage/tickets/' . $file) }}" target="_blank">{{ $file }}</a>
-                                        <!-- Optional: Add a remove button (handle with JS or new route) -->
-                                    </li>
+                    @if($ticket->attachments && count($ticket->attachments) > 0)
+                        <hr>
+                        <div class="mb-4">
+                            <h6 class="fw-semibold mb-3"><i class="fas fa-paperclip me-2"></i>{{ __('Attachments')}}</h6>
+                            
+                            <div class="row g-3">
+                                @foreach($ticket->attachments as $file)
+                                    @php
+                                        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                                        $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                        
+                                        // Try different path variations
+                                        $path1 = asset('storage/tickets/' . $file);
+                                        $path2 = asset('tickets/' . $file);
+                                        $path3 = Storage::url('tickets/' . $file);
+                                    @endphp
+                                    
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                
+                                                @if($isImage)
+                                                    {{-- Try to load image --}}
+                                                    <div class="text-center mb-2">
+                                                        <img src="{{ Storage::url('tickets/' . $file) }}" 
+                                                            alt="{{ $file }}" 
+                                                            class="img-fluid rounded"
+                                                            style="max-height: 150px; object-fit: cover;"
+                                                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                        <div style="display:none;" class="text-danger">
+                                                            <i class="fas fa-exclamation-triangle"></i> Image failed to load
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    {{-- File Icon --}}
+                                                    <div class="text-center mb-2">
+                                                        @if($extension == 'pdf')
+                                                            <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                                                        @elseif(in_array($extension, ['doc', 'docx']))
+                                                            <i class="fas fa-file-word fa-4x text-primary"></i>
+                                                        @else
+                                                            <i class="fas fa-file fa-4x text-secondary"></i>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endforeach
-                            </ul>
+                            </div>
                         </div>
                     @endif
 

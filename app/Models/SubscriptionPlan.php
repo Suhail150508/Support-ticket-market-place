@@ -43,4 +43,9 @@ class SubscriptionPlan extends Model
     {
         return $this->hasMany(UserSubscription::class)->where('status', 'active');
     }
+
+    public function userSubscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
 }

@@ -22,7 +22,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="{{ route('user.dashboard') }}" class="sidebar-brand">
-                <i class="fas fa-ticket-alt"></i>{{__('SupportPro')}}
+                <i class="fas fa-ticket-alt"></i>{{__('SupportSystem')}}
             </a>
         </div>
         <nav class="sidebar-menu">
@@ -42,12 +42,18 @@
                 <i class="fas fa-credit-card"></i>
                 <span>{{__('Subscriptions')}}</span>
             </a>
-            @if(auth()->user()->canAccessChat())
+            <a href="{{ route('subscription-history.index') }}" class="nav-link {{ request()->routeIs('subscription-history.*') ? 'active' : '' }}">
+                <i class="fas fa-history"></i>
+                <span>{{__('Subscription History')}}</span>
+            </a>
             <a href="{{ route('chat.index') }}" class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}">
                 <i class="fas fa-comments"></i>
                 <span>{{__('Live Chat')}}</span>
             </a>
-            @endif
+            <a href="{{ route('profile.index') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                <i class="fas fa-user"></i>
+                <span>{{__('My Profile')}}</span>
+            </a>
             @if(auth()->user()->role == 'admin')
                 <a href="{{ route('admin.dashboard') }}" class="nav-link">
                     <i class="fas fa-user-shield"></i>
@@ -62,11 +68,19 @@
         <div class="sidebar-footer">
             <div class="user-info">
                 <div class="user-avatar">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    @php
+                        $user = auth()->user();
+                        $hasImage = $user->image && \Illuminate\Support\Facades\Storage::disk('public')->exists('profiles/' . $user->image);
+                    @endphp
+                    @if($hasImage)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url('profiles/' . $user->image) }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    @else
+                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    @endif
                 </div>
                 <div class="flex-grow-1">
-                    <div class="fw-semibold">{{ auth()->user()->name }}</div>
-                    <small class="text-muted opacity-75">{{ auth()->user()->email }}</small>
+                    <div class="fw-semibold">{{ $user->name }}</div>
+                    <small class="text-muted opacity-75">{{ $user->email }}</small>
                 </div>
             </div>
             <form action="{{ route('logout') }}" method="POST" class="mt-2">

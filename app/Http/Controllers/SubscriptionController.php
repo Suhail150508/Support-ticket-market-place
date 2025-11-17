@@ -77,7 +77,7 @@ class SubscriptionController extends Controller
             ]);
 
             session()->flash('success', 'Subscription activated successfully! You can now access live chat.');
-            return redirect()->route('chat.index');
+            return redirect()->route('subscription-history.index');
         }
 
         // For other payment methods, redirect to payment processing
