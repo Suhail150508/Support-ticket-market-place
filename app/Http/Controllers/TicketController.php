@@ -80,6 +80,7 @@ class TicketController extends Controller
             'priority' => $validated['priority'] ?? 'low',
             'status' => 'open',
             'attachments' => $attachments,
+            'created_by' => 'user',
         ]);
 
         return redirect()
@@ -97,6 +98,11 @@ class TicketController extends Controller
         $ticket->load(['replies' => function ($query) {
             $query->latest()->with('user:id,name,email');
         }]);
+
+        if ($ticket->is_notified === 0 && $ticket->user_id === auth()->id()) {
+            $ticket->is_notified = true;
+            $ticket->save();
+        }
 
         return view('tickets.show', compact('ticket'));
     }
@@ -308,7 +314,6 @@ class TicketController extends Controller
 
         try {
             $client = \OpenAI::client($apiKey);
-
             $prompt = 'Suggest 5 concise support ticket question prompts for the category "' . $category->name . '". Return ONLY a JSON array of strings.';
             $response = $client->chat()->create([
                 'model' => 'gpt-4o-mini',
@@ -385,5 +390,57 @@ class TicketController extends Controller
         }
 
         return response()->json($fallback);
+    }
+
+    /**
+     * Return JSON list of unread tickets updated by admins.
+     */
+    public function userNotifications(Request $request)
+    {
+
+        $since = $request->query('since');
+        $userId = auth()->id();
+
+        $ticketsQ = Ticket::select(['id','subject','updated_at'])
+            ->where('user_id', $userId)
+            ->where('is_notified', 0);
+
+        if ($since) {
+            $ticketsQ->where('updated_at', '>', $since);
+        }
+
+        $events = $ticketsQ->latest('updated_at')->limit(20)->get()->map(function ($t) {
+            return [
+                'type' => 'ticket',
+                'ticket_id' => $t->id,
+                'subject' => $t->subject,
+                'created_at' => $t->updated_at->toIso8601String(),
+            ];
+        });
+
+        return response()->json([
+            'events' => $events,
+            'now' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Mark a single ticket as read for the authenticated user.
+     */
+    public function markNotificationRead(Request $request)
+    {
+        $request->validate([
+            'ticket_id' => ['required','integer','exists:tickets,id'],
+        ]);
+
+        $ticket = Ticket::findOrFail($request->ticket_id);
+
+        if ($ticket->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $ticket->update(['is_notified' => true]);
+
+        return response()->json(['ok' => true]);
     }
 }

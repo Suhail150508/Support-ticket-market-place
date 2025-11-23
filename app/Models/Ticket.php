@@ -19,8 +19,7 @@ class Ticket extends Model
         'status',
         'assigned_to',
         'attachments',
-        'is_notified',
-        'resolved_at',
+        'created_by',
     ];
 
     protected $casts = [

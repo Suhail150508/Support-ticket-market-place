@@ -30,7 +30,11 @@
             "Modules\\LiveChat\\App\\": "Modules/LiveChat/App/",
             "Modules\\PaymentGateway\\": "Modules/PaymentGateway/",
             "Modules\\Subscription\\": "Modules/Subscription/"
-        }
+        },
+        
+        "files": [
+            "app/Helpers/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

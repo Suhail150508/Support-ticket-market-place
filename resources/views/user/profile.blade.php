@@ -7,16 +7,10 @@
     <div class="col-lg-8 mx-auto">
         <!-- Profile Header Card -->
         <div class="card mb-4">
-            <div class="card-body text-center py-5">
+            <div class="card-body text-center profile-header-body">
                 <div class="mb-4">
                     <div class="user-avatar-large mx-auto mb-3 position-relative">
-                        @if($user->image && Storage::disk('public')->exists('profiles/' . $user->image))
-                            <img src="{{ Storage::url('profiles/' . $user->image) }}" alt="Profile Image" class="user-profile-image">
-                        @else
-                            <div class="user-avatar-initial">
-                                {{ strtoupper(substr($user->name, 0, 1)) }}
-                            </div>
-                        @endif
+                        <img src="{{ getImageOrPlaceholder($user->image, '30x30') }}" alt="Profile Image" class="user-profile-image" />
                     </div>
                     <h3 class="mb-1">{{ $user->name }}</h3>
                     <p class="text-muted mb-0">{{ $user->email }}</p>
@@ -43,9 +37,9 @@
                     
                     <div class="mb-3">
                         <label class="form-label">{{ __('Profile Image') }}</label>
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="image-upload-container">
                             <div id="imagePreviewContainer" class="d-none">
-                                <img id="imagePreview" src="" alt="Preview" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                                <img id="imagePreview" src="" alt="Preview" class="image-preview-thumb">
                             </div>
                             <div>
                                 <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click();">
@@ -121,7 +115,7 @@
                                name="password_confirmation">
                     </div>
 
-                    <div class="d-flex justify-content-between">
+                    <div class="form-actions">
                         <a href="{{ route('user.dashboard') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-2"></i>{{ __('Cancel') }}
                         </a>
@@ -137,7 +131,7 @@
         <div class="row g-4 mt-2">
             <div class="col-md-4">
                 <div class="card">
-                    <div class="card-body text-center">
+                    <div class="stat-card-body">
                         <i class="fas fa-ticket-alt fa-2x text-primary mb-3"></i>
                         <h4 class="mb-1">{{ $user->tickets()->count() }}</h4>
                         <p class="text-muted mb-0 small">{{ __('Total Tickets') }}</p>
@@ -146,7 +140,7 @@
             </div>
             <div class="col-md-4">
                 <div class="card">
-                    <div class="card-body text-center">
+                    <div class="stat-card-body">
                         <i class="fas fa-credit-card fa-2x text-success mb-3"></i>
                         <h4 class="mb-1">{{ $user->subscriptions()->count() }}</h4>
                         <p class="text-muted mb-0 small">{{ __('Total Subscriptions') }}</p>
@@ -155,7 +149,7 @@
             </div>
             <div class="col-md-4">
                 <div class="card">
-                    <div class="card-body text-center">
+                    <div class="stat-card-body">
                         <i class="fas fa-calendar-alt fa-2x text-info mb-3"></i>
                         <h4 class="mb-1">{{ $user->created_at->format('M Y') }}</h4>
                         <p class="text-muted mb-0 small">{{ __('Member Since') }}</p>
@@ -185,4 +179,3 @@
 </script>
 @endpush
 @endsection
-

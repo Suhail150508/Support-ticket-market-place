@@ -11,26 +11,14 @@ use Illuminate\Support\Facades\Storage;
 @endpush
 
 @push('styles')
-<style>
-    .chat-container {
-        height: 600px;
-        display: flex;
-        flex-direction: column;
-    }
-    .chat-messages {
-        flex: 1;
-    }
-    .message-text {
-        word-wrap: break-word;
-    }
-</style>
+
 @endpush
 
 @section('content')
 <div class="page-header mb-4">
     <div>
-        <h1 class="mb-2"><i class="fas fa-comments me-2"></i>Live Chat Support</h1>
-        <p class="mb-0 opacity-75">Chat directly with our admin support team</p>
+        <h1 class="mb-2"><i class="fas fa-comments me-2"></i>{{ __('Live Chat Support')}}</h1>
+        <p class="mb-0 opacity-75">{{ __('Chat directly with our admin support team')}}</p>
     </div>
 </div>
 
@@ -82,7 +70,7 @@ use Illuminate\Support\Facades\Storage;
                             <i class="fas fa-image"></i>
                         </button>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-2"></i>Send
+                            <i class="fas fa-paper-plane me-2"></i>{{ __('Send')}}
                         </button>
                     </form>
                     <div id="imagePreview" class="mt-2 d-none"></div>
@@ -127,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const div = document.createElement('div');
                     div.className = 'd-inline-block me-2 mb-2 position-relative';
                     div.innerHTML = `
-                        <img src="${e.target.result}" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+                        {!! getImageOrPlaceholder($e.target.result, '80px', 'img-thumbnail', 'width: 80px; height: 80px; object-fit: cover;') !!}
                         <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" onclick="removeImage(${index})" style="padding: 2px 6px;">
                             <i class="fas fa-times"></i>
                         </button>

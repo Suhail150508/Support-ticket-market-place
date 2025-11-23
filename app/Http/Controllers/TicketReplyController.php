@@ -33,6 +33,11 @@ class TicketReplyController extends Controller
             $ticket->update(['status' => 'open']);
         }
 
+        if ($ticket->user_id !== auth()->id()) {
+            $ticket->is_notified = false;
+            $ticket->save();
+        }
+
         session()->flash('success', 'Reply added');
         return back();
     }

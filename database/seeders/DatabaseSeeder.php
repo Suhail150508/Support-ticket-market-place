@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             TicketSeeder::class,
             SubscriptionPlanSeeder::class,
+            HomePageContentSeeder::class,
         ]);
     }
 }

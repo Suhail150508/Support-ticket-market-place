@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
             $table->boolean('is_notified')->default(false);
             $table->timestamp('resolved_at')->nullable();
+             $table->string('created_by')->nullable();
             $table->timestamps();
         });
     }

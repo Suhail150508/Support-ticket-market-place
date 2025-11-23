@@ -44,18 +44,25 @@
                     </div>
                 </div>
 
-                <div class="col-lg-6 text-center">
-                    <div class="main-feature-card">
-                        <div class="main-feature-icon">
-                            <i class="fas fa-ticket-alt"></i>
+                <div class="col-lg-6">
+                    <div class="hero-illustration">
+                        <div class="hero-image">
+                            <img src="{{ getImageOrPlaceholder($hero['image'] ?? null, '329x203') }}" alt="{{ $hero['title'] ?? 'Hero Image' }}" />
                         </div>
-                        <h4>{{ $hero['cart_title'] ?? 'Smart Ticket Management' }}</h4>
-                        <p>{{ $hero['cart_subtitle'] ?? 'AI-powered routing and automated responses for efficient support' }}</p>
+                        <div class="hero-badge text-dark"><i class="fas fa-headset me-2"></i>{{ __('24/7 Support') }}</div>
+                        <div class="hero-badge badge-secondary text-dark"><i class="fas fa-comments me-2"></i>{{ __('Live Chat') }}</div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
+
+    <div class="shape-divider">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,0V16.48c47.13,22.51,103.75,32.56,158,28,70.06-5.72,136.77-33.49,206.83-38.93,92.22-7.21,183.38,20.64,275.6,27.85,118.9,9.29,238.41-17.34,356.25-9.43C1063.45,31.94,1132.82,49.93,1200,72V0Z"></path>
+        </svg>
+    </div>
 
     <!-- Features Section -->
     <section id="features" class="features-section">
@@ -159,7 +166,10 @@
                 @if(isset($stats['items']) && is_array($stats['items']) && count($stats['items']) > 0)
                     @foreach($stats['items'] as $stat)
                         <div class="col-md-3 col-6">
-                            <div class="stat-item animate-on-scroll">
+                            <div class="stat-item animate-on-scroll text-center">
+                                <div class="stat-icon">
+                                    <i class="{{ $stat['icon'] ?? 'fas fa-star' }}"></i>
+                                </div>
                                 <div class="stat-number" data-count="{{ $stat['number'] ?? 0 }}">0</div>
                                 <p>{{ $stat['label'] ?? 'Stat' }}</p>
                             </div>
@@ -168,29 +178,41 @@
                @else
                     {{-- Default static stats --}}
                     <div class="col-md-3 col-6">
-                        <div class="stat-item animate-on-scroll">
-                            <div class="stat-number" data-count="25000">0</div>
-                            <p>{{ __('Tickets Processed') }}</p>
+                        <div class="stat-item animate-on-scroll text-center">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                            <div class="stat-number" data-count="50000">0</div>
+                            <p>{{ __('Tickets Resolved') }}</p>
                         </div>
                     </div>
 
                     <div class="col-md-3 col-6">
-                        <div class="stat-item animate-on-scroll">
-                            <div class="stat-number" data-count="99">0</div>
-                            <p>{{ __('Customer Satisfaction') }}</p>
+                        <div class="stat-item animate-on-scroll text-center">
+                            <div class="stat-icon">
+                                <i class="fas fa-smile"></i>
+                            </div>
+                            <div class="stat-number" data-count="98">0</div>
+                            <p>{{ __('CSAT (%)') }}</p>
                         </div>
                     </div>
 
                     <div class="col-md-3 col-6">
-                        <div class="stat-item animate-on-scroll">
-                            <div class="stat-number" data-count="500">0</div>
-                            <p>{{ __('Businesses Trust Us') }}</p>
+                        <div class="stat-item animate-on-scroll text-center">
+                            <div class="stat-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="stat-number" data-count="1200">0</div>
+                            <p>{{ __('Companies') }}</p>
                         </div>
                     </div>
 
                     <div class="col-md-3 col-6">
-                        <div class="stat-item animate-on-scroll">
-                            <div class="stat-number" data-count="24">0</div>
+                        <div class="stat-item animate-on-scroll text-center">
+                            <div class="stat-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="stat-number" data-count="2">0</div>
                             <p>{{ __('Avg. Response Time (hrs)') }}</p>
                         </div>
                     </div>
@@ -201,7 +223,7 @@
     </section>
 
     <!-- Pricing Section -->
-    <section id="pricing" class="pricing-section" style="padding: 100px 0; background: var(--light);">
+    <section id="pricing" class="pricing-section">
         <div class="container">
             <div class="row mb-5">
                 <div class="col-12 text-center">
@@ -297,36 +319,54 @@
         </div>
     </section>
 
+    <section class="cta-strip">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2 class="cta-title">{{ __('Ready to delight your customers?') }}</h2>
+                    <p class="cta-subtitle">{{ __('Start your free trial and experience AI-powered support today') }}</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    @auth
+                        <a href="{{ route('tickets.index') }}" class="btn btn-primary-custom btn-lg">{{ __('Go to Dashboard') }}</a>
+                    @else
+                        <a href="{{ route('register') }}" class="btn btn-primary-custom btn-lg">{{ __('Get Started Free') }}</a>
+                    @endauth
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Section -->
-    <section id="contact" class="contact-section" style="padding: 100px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <section id="contact" class="contact-section">
         <div class="container">
             <div class="row mb-5">
                 <div class="col-12 text-center">
-                    <h2 class="section-title" style="color: white; margin-bottom: 1rem;">
+                    <h2 class="section-title contact-title">
                         {{ $contact['title'] ?? 'Get In Touch' }}
                     </h2>
-                    <p class="section-subtitle" style="color: rgba(255,255,255,0.9);">
+                    <p class="section-subtitle contact-subtitle">
                         {{ $contact['subtitle'] ?? "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible." }}
                     </p>
                 </div>
             </div>
             <div class="row justify-content-center">
                 <div class="col-lg-8">
-                    <div class="contact-card" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 50px; border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="contact-card">
                         <form class="contact-form">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <input type="text" class="form-control form-control-lg" placeholder="{{ $contact['name_placeholder'] ?? 'Your Name' }}" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 10px;" required>
+                                    <input type="text" class="form-control form-control-lg contact-input" placeholder="{{ $contact['name_placeholder'] ?? 'Your Name' }}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <input type="email" class="form-control form-control-lg" placeholder="{{ $contact['email_placeholder'] ?? 'Your Email' }}" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 10px;" required>
+                                    <input type="email" class="form-control form-control-lg contact-input" placeholder="{{ $contact['email_placeholder'] ?? 'Your Email' }}" required>
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <input type="text" class="form-control form-control-lg" placeholder="{{ $contact['subject_placeholder'] ?? 'Subject' }}" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 10px;" required>
+                                <input type="text" class="form-control form-control-lg contact-input" placeholder="{{ $contact['subject_placeholder'] ?? 'Subject' }}" required>
                             </div>
                             <div class="mb-3">
-                                <textarea class="form-control form-control-lg" rows="5" placeholder="{{ $contact['message_placeholder'] ?? 'Your Message' }}" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 10px;" required></textarea>
+                                <textarea class="form-control form-control-lg contact-input" rows="5" placeholder="{{ $contact['message_placeholder'] ?? 'Your Message' }}" required></textarea>
                             </div>
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary-custom btn-lg">

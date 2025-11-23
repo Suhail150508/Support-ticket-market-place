@@ -97,6 +97,14 @@
                 <h1 class="page-title mb-0">@yield('page-title', __('Admin Dashboard'))</h1>
             </div>
             <div class="d-flex align-items-center gap-3">
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary d-flex align-items-center" type="button" id="adminNotifBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell me-2"></i><span id="admin-notif-count" class="badge bg-danger">0</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminNotifBtn" style="min-width: 360px;" id="admin-notif-menu">
+                        <li class="dropdown-item text-muted">{{__('No messages')}}</li>
+                    </ul>
+                </div>
                 <a href="{{ route('tickets.index') }}" class="btn btn-outline-primary">
                     <i class="fas fa-home me-2"></i>{{__('View Site')}}
                 </a>
@@ -144,6 +152,84 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('show');
         }
+        (function(){
+            let since = null;
+            let events = [];
+            function dedupeAdd(ev) {
+                const key = ev.type + ':' + ev.ticket_id + ':' + ev.created_at;
+                if (!events.find(e => (e.type+':'+e.ticket_id+':'+e.created_at) === key)) {
+                    events.unshift(ev);
+                    events = events.slice(0, 20);
+                }
+            }
+            function renderList() {
+                const menu = document.getElementById('admin-notif-menu');
+                const countEl = document.getElementById('admin-notif-count');
+                if (!menu || !countEl) return;
+                countEl.textContent = events.length;
+                menu.innerHTML = '';
+                if (!events.length) {
+                    const li = document.createElement('li');
+                    li.className = 'dropdown-item text-muted';
+                    li.textContent = '{{__('No messages')}}';
+                    menu.appendChild(li);
+                    return;
+                }
+                events.forEach((ev, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'dropdown-item';
+                    const a = document.createElement('a');
+                    a.className = 'd-flex justify-content-between align-items-center text-decoration-none';
+                    a.href = '{{ url('admin/tickets') }}/' + ev.ticket_id;
+                    a.dataset.index = idx;
+                    const content = document.createElement('div');
+                    content.innerHTML = `<div class="fw-semibold">{{__('New ticket')}}</div><div class="small text-muted">${ev.subject || ''}</div>`;
+                    const view = document.createElement('span');
+                    view.className = 'badge bg-primary';
+                    view.textContent = '{{__('View')}}';
+                    a.appendChild(content);
+                    a.appendChild(view);
+                    li.appendChild(a);
+                    menu.appendChild(li);
+                });
+                menu.addEventListener('click', async function(e){
+                    const anchor = e.target.closest('a');
+                    if (!anchor) return;
+                    const idx = parseInt(anchor.dataset.index, 10);
+                    if (!isNaN(idx)) {
+                        const ev = events[idx];
+                        try {
+                            await fetch('{{ route('notifications.read.admin') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ ticket_id: ev.ticket_id })
+                            });
+                        } catch (e) {}
+                        events.splice(idx, 1);
+                        renderList();
+                    }
+                });
+            }
+            async function poll() {
+                try {
+                    const url = new URL('{{ route('notifications.admin') }}', window.location.origin);
+                    if (since) url.searchParams.set('since', since);
+                    const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const data = await res.json();
+                    since = data.now;
+                    (data.events||[]).forEach(ev => dedupeAdd(ev));
+                    renderList();
+                } catch(e) {}
+            }
+            setInterval(poll, 5000);
+            poll();
+        })();
+        // Hide caret on dropdown button
+        const adminBtn = document.getElementById('adminNotifBtn');
+        if (adminBtn) { const style = document.createElement('style'); style.innerHTML = '#adminNotifBtn::after{display:none;}'; document.head.appendChild(style); }
     </script>
     
     @stack('scripts')

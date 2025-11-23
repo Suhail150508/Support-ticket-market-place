@@ -105,7 +105,7 @@
                                     @if($isImage)
                                         {{-- Try to load image --}}
                                         <div class="text-center mb-2">
-                                            <img src="{{ Storage::url('tickets/' . $file) }}" 
+                                            <img src="{{ getImageOrPlaceholder('tickets/' . $file, '220px', 'img-fluid rounded') }}" 
                                                 alt="{{ $file }}" 
                                                 class="img-fluid rounded"
                                                 style="max-height: 150px; object-fit: cover;"
@@ -160,7 +160,7 @@
         <h5 class="mb-0"><i class="fas fa-reply me-2"></i>{{ __('Add a Reply')}}</h5>
     </div>
     <div class="card-body p-4">
-        <form action="{{ route('tickets.reply', $ticket->id) }}" method="POST">
+        <form action="{{ route('admin.tickets.reply', $ticket->id) }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="message" class="form-label fw-semibold">{{ __('Your Message')}}</label>

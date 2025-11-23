@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Use asset helper for proper URL generation
                     const imageUrl = `{{ url('/') }}/storage/chat/${encodeURIComponent(att)}`;
                     attachmentsHtml += `<a href="${imageUrl}" target="_blank" class="d-inline-block me-2 mb-2">
-                        <img src="${imageUrl}" alt="{{__('Attachment')}}" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover; cursor: pointer; border: 1px solid #ddd;" onerror="console.error('{{__('Image failed to load:')}}', '${imageUrl}'); this.parentElement.style.display='none';">
+                        <img src="{{ getImageOrPlaceholder('${imageUrl}', '150x150') }}" alt="{{__('Attachment')}}" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover; cursor: pointer; border: 1px solid #ddd;" onerror="console.error('{{__('Image failed to load:')}}', '${imageUrl}'); this.parentElement.style.display='none';">
                     </a>`;
                 }
             });

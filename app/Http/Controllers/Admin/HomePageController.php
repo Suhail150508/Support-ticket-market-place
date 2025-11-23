@@ -27,12 +27,33 @@ class HomePageController extends Controller
         $request->validate([
             'section_name' => 'required|string|max:255',
             'content' => 'required|json',
-            'sort_order' => 'nullable|integer'
+            'sort_order' => 'nullable|integer',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
-        
+
+        $content = json_decode($request->content, true);
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('uploads/homepage', 'public');
+            $content['image'] = asset('storage/' . $imagePath);
+        }
+
+        if ($request->hasFile('images')) {
+            $paths = [];
+            foreach ($request->file('images') as $file) {
+                $p = $file->store('uploads/homepage', 'public');
+                $paths[] = asset('storage/' . $p);
+            }
+            $content['images'] = $paths;
+            if (!isset($content['image']) && count($paths)) {
+                $content['image'] = $paths[0];
+            }
+        }
+
         $section->update([
             'section_name' => $request->section_name,
-            'content' => json_decode($request->content, true),
+            'content' => $content,
             'is_active' => $request->boolean('is_active'),
             'sort_order' => $request->sort_order ?? 0
         ]);
@@ -50,21 +71,51 @@ class HomePageController extends Controller
         $request->validate([
             'section_key' => 'required|string|max:255|unique:home_page_contents,section_key',
             'section_name' => 'required|string|max:255',
-            'content' => 'required|json', // Change to 'json' validation
+            'content' => 'required|json',
             'is_active' => 'boolean',
-            'sort_order' => 'integer'
+            'sort_order' => 'integer',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
-        
-      HomePageContent::create([
+
+        // Handle image upload if exists (single + multiple)
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('uploads/homepage', 'public');
+        }
+        $multiPaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $multiPaths[] = asset('storage/' . $file->store('uploads/homepage', 'public'));
+            }
+        }
+
+        // Decode JSON content
+        $content = json_decode($request->content, true);
+
+        // Add image path(s) into content JSON if image exists
+        if ($imagePath) {
+            $content['image'] = asset('storage/' . $imagePath);
+        }
+        if (!empty($multiPaths)) {
+            $content['images'] = $multiPaths;
+            if (!isset($content['image'])) {
+                $content['image'] = $multiPaths[0];
+            }
+        }
+
+        HomePageContent::create([
             'section_key' => $request->section_key,
             'section_name' => $request->section_name,
-            'content' => json_decode($request->content, true),
+            'content' => $content,
             'is_active' => (bool) $request->is_active,
-            'sort_order' => $request->sort_order ?? 0
+            'sort_order' => $request->sort_order ?? 0,
         ]);
-            session()->flash('success', 'Home page section created successfully');
+
+        session()->flash('success', 'Home page section created successfully');
         return redirect()->route('admin.homepage.index');
     }
+
 
     public function destroy($id)
     {

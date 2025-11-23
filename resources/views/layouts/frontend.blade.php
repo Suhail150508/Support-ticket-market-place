@@ -16,9 +16,12 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-ticket-alt me-2"></i>{{__('SupportSystem')}}
-            </a>
+            <div>
+                <a class="navbar-brand" href="#">
+                    <img src="{{ asset('assets/logos/logo9.png') }}" alt="Customer support" style="height: 100px" />
+
+                </a>
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -71,6 +74,7 @@
                     <div class="social-links">
                         <a href="https://web.facebook.com/sohel.rana.458881" target="_blank"><i class="fab fa-facebook-f"></i></a>
                         <a href="https://www.linkedin.com/feed/?trk=guest_homepage-basic_google-one-tap-submit" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://web.whatsapp.com/" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
 
                     </div>

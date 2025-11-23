@@ -120,10 +120,7 @@
                                                 alt="{{ $file }}" 
                                                 class="img-fluid rounded"
                                                 style="max-height: 150px; object-fit: cover;"
-                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                            <div style="display:none;" class="text-danger">
-                                                <i class="fas fa-exclamation-triangle"></i> Image failed to load
-                                            </div>
+                                                onerror="this.style.display='none'; const ph=document.createElement('div'); ph.style.width='550px'; ph.style.height='440px'; ph.style.background='#f3f4f6'; ph.style.border='1px dashed #cbd5e1'; ph.style.display='flex'; ph.style.alignItems='center'; ph.style.justifyContent='center'; ph.style.color='#64748b'; ph.style.fontWeight='600'; ph.innerText='550 × 440'; this.parentElement.appendChild(ph);">
                                         </div>
                                     @else
                                         {{-- File Icon --}}

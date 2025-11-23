@@ -719,4 +719,58 @@ body {
         opacity: 1;
     }
 
+    .chat-container {
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+    .chat-messages {
+        flex: 1;
+    }
+    .message-text {
+        word-wrap: break-word;
+    }
 
+
+        /* Profile Header */
+    .profile-header-body {
+        padding: 3rem 0;
+        text-align: center;
+    }
+
+    /* Image Upload Container */
+    .image-upload-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    /* Image Preview Thumbnail */
+    .image-preview-thumb {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 1px solid #dee2e6;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+
+    /* Statistics Card Body */
+    .stat-card-body {
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stat-card-body i {
+        margin-bottom: 1rem;
+    }
+
+    .stat-card-body h4 {
+        margin-bottom: 0.5rem;
+    }

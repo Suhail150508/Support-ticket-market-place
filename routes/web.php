@@ -57,6 +57,9 @@ Route::middleware(['auth', 'is_user'])->group(function () {
     // AI Question Suggestions Route
     Route::post('/ai/get-questions', [TicketController::class, 'getAISuggestions'])->name('ai.questions');
     Route::post('/ai/generate-ticket', [TicketController::class, 'generateTicketContent'])->name('ai.ticket.generate');
+    // Notifications
+    Route::get('notifications/user', [TicketController::class, 'userNotifications'])->name('notifications.user');
+    Route::post('notifications/read', [TicketController::class, 'markNotificationRead'])->name('notifications.read');
 
 });
 
@@ -86,6 +89,9 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
     Route::get('admin/tickets/{ticket}/edit', [AdminTicketController::class, 'edit'])->name('admin.tickets.edit');
     Route::put('admin/tickets/{ticket}', [AdminTicketController::class, 'update'])->name('admin.tickets.update');
     Route::delete('admin/tickets/{ticket}', [AdminTicketController::class, 'destroy'])->name('admin.tickets.destroy');
+    Route::post('admin/tickets/{ticket}/reply', [TicketReplyController::class, 'store'])->name('admin.tickets.reply');
+    // Admin notifications
+    Route::get('admin/notifications', [AdminTicketController::class, 'adminNotifications'])->name('notifications.admin');
 
     // Admin User Management
     Route::get('admin/users', [AdminUserController::class, 'index'])->name('admin.users.index');
@@ -134,4 +140,7 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
     Route::get('admin/chat', [ChatController::class, 'index'])->name('admin.chat.index');
     Route::get('admin/chat/{userId}', [ChatController::class, 'show'])->name('admin.chat.show');
     Route::post('admin/chat', [ChatController::class, 'store'])->name('admin.chat.store');
+
+    // Admin mark read for notifications
+    Route::post('admin/notifications/read', [TicketController::class, 'markNotificationRead'])->name('notifications.read.admin');
 });

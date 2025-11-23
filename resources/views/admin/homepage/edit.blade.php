@@ -15,7 +15,7 @@
         <h5 class="mb-0"><i class="fas fa-cog me-2"></i>{{__('Section Details')}}</h5>
     </div>
     <div class="card-body">
-        <form action="{{ route('admin.homepage.update', $section->id) }}" method="POST" id="homepageForm">
+        <form action="{{ route('admin.homepage.update', $section->id) }}" method="POST" id="homepageForm" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -180,6 +180,18 @@ document.getElementById('homepageForm').addEventListener('submit', function(e) {
         alert('{{__('Invalid JSON format! Please check your content.')}}');
         contentTextarea.focus();
     }
+});
+
+document.getElementById('imageInput').addEventListener('change', function(event) {
+    let file = event.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        let preview = document.getElementById('previewImage');
+        preview.src = e.target.result;
+        preview.classList.remove('d-none');
+    };
+    reader.readAsDataURL(file);
 });
 </script>
 @endpush

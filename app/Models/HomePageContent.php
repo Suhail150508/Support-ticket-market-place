@@ -11,7 +11,8 @@ class HomePageContent extends Model
         'section_name',
         'content',
         'is_active',
-        'sort_order'
+        'sort_order',
+        'image',
     ];
 
     protected $casts = [

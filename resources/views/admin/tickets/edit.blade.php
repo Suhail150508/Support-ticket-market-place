@@ -159,7 +159,7 @@
                                                 @if($isImage)
                                                     {{-- Try to load image --}}
                                                     <div class="text-center mb-2">
-                                                        <img src="{{ Storage::url('tickets/' . $file) }}" 
+                                                        <img src="{{ getImageOrPlaceholder('tickets/' . $file, '220x220') }}" 
                                                             alt="{{ $file }}" 
                                                             class="img-fluid rounded"
                                                             style="max-height: 150px; object-fit: cover;"

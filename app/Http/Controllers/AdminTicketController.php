@@ -71,7 +71,10 @@ class AdminTicketController extends Controller
 
         $attachments = $this->handleFileUploads($request);
 
-        Ticket::create(array_merge($validated, ['attachments' => $attachments]));
+        Ticket::create(array_merge($validated, [
+            'attachments' => $attachments,
+            'created_by' => 'admin',
+        ]));
 
         session()->flash('success', 'Ticket created successfully');
         return redirect()->route('admin.tickets.index');
@@ -83,6 +86,11 @@ class AdminTicketController extends Controller
     public function show(Ticket $ticket)
     {
         $ticket->load(['user', 'category', 'department', 'assignedTo', 'replies.user']);
+
+        if ($ticket->is_notified === 0) {
+            $ticket->is_notified = true;
+            $ticket->save();
+        }
 
         return view('admin.tickets.show', compact('ticket'));
     }
@@ -174,5 +182,29 @@ class AdminTicketController extends Controller
         }
 
         return $attachments;
+    }
+
+    public function adminNotifications(Request $request) 
+    {
+        $since = $request->query('since');
+
+        $ticketsQ = Ticket::with('user:id,name')
+            ->where('is_notified', 0)
+            ->where('created_by', 'user')
+            ->when($since, fn($q) => $q->where('updated_at', '>', $since))
+            ->latest('updated_at')->limit(20)->get()->map(function ($t) {
+            return [
+                'type' => 'ticket',
+                'ticket_id' => $t->id,
+                'subject' => $t->subject,
+                'user' => $t->user?->name,
+                'created_at' => $t->updated_at->toIso8601String(),
+            ];
+        });
+
+        return response()->json([
+            'events' => $ticketsQ,
+            'now' => now()->toIso8601String(),
+        ]);
     }
 }

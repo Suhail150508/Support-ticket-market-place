@@ -15,7 +15,7 @@
         <h5 class="mb-0"><i class="fas fa-cog me-2"></i>{{__('Section Details')}}</h5>
     </div>
     <div class="card-body">
-        <form action="{{ route('admin.homepage.store') }}" method="POST" id="homepageForm">
+        <form action="{{ route('admin.homepage.store') }}" method="POST" id="homepageForm" enctype="multipart/form-data">
             @csrf
             
             <div class="row mb-3">
@@ -45,6 +45,16 @@
                 </div>
             </div>
 
+            <!-- Image Upload -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{__('Upload Image (optional)')}}</label>
+                <input type="file" id="imageInput" name="image" class="form-control" accept="image/*">
+                <div class="mt-2">
+                    <img id="previewImage" src="#" alt="Preview" class="img-thumbnail d-none" style="max-height: 160px;">
+                </div>
+                <small class="text-muted">{{__('You can upload an image; additional images can be added via JSON as an array.')}}</small>
+            </div>
+
             <div class="mb-3">
                 <label class="form-label fw-semibold">{{__('Content (JSON)')}} <span class="text-danger">*</span></label>
                 <textarea class="form-control font-monospace" name="content" id="content" rows="15" required placeholder='{"title": "{{__("Example")}}", "content": "..."}'></textarea>
@@ -65,16 +75,43 @@
 
 @push('scripts')
 <script>
-document.getElementById('homepageForm').addEventListener('submit', function(e) {
-    const contentTextarea = document.getElementById('content');
-    try {
-        JSON.parse(contentTextarea.value);
-    } catch (error) {
-        e.preventDefault();
-        alert('{{__('Invalid JSON format! Please check your content.')}}');
-        contentTextarea.focus();
-    }
-});
+    document.getElementById('homepageForm').addEventListener('submit', function(e) {
+        const contentTextarea = document.getElementById('content');
+        try {
+            JSON.parse(contentTextarea.value);
+        } catch (error) {
+            e.preventDefault();
+            alert('{{__('Invalid JSON format! Please check your content.')}}');
+            contentTextarea.focus();
+        }
+    });
+
+    // IMAGE PREVIEW + ADD IMAGE URL TO JSON
+    document.getElementById('imageInput').addEventListener('change', function(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+
+        let reader = new FileReader();
+
+        reader.onload = function(e) {
+            let preview = document.getElementById("previewImage");
+            preview.src = e.target.result;
+            preview.classList.remove("d-none");
+
+            // Insert Base64 into JSON
+            let jsonText = document.getElementById("content").value;
+            try {
+                let json = JSON.parse(jsonText);
+                json.image = e.target.result;
+                document.getElementById("content").value = JSON.stringify(json, null, 4);
+            } catch (err) {
+                alert("Fix the JSON first before uploading image.");
+            }
+        };
+
+        reader.readAsDataURL(file);
+    });
+
 </script>
 @endpush
 
